@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
-import { Text, View, FlatList, Dimensions, Button, StyleSheet } from 'react-native';
+import React, {Component} from 'react';
+import {Text, View, FlatList, Dimensions, Button, StyleSheet} from 'react-native';
 
-const { width } = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
 const style = {
     justifyContent: 'center',
@@ -12,12 +12,11 @@ const style = {
     borderWidth: 1,
 };
 
-const COLORS = ['deepskyblue','fuchsia', 'lightblue '];
+const COLORS = ['deepskyblue', 'fuchsia', 'lightblue '];
 
 function getData(number) {
     let data = [];
-    for(var i=0; i<number; ++i)
-    {
+    for (var i = 0; i < number; ++i) {
         data.push("" + i);
     }
 
@@ -26,19 +25,40 @@ function getData(number) {
 
 class ScrollToExample extends Component {
 
+    constructor(props) {
+        super(props);
+        this.state = {
+            data: props.data
+        }
+        this.initialScrollIndex = 50;
+    }
+
+
     getItemLayout = (data, index) => (
-        { length: 50, offset: 50 * index, index }
-    )
+        {length: 50, offset: 50 * index, index}
+    );
 
     getColor(index) {
-        const mod = index%3;
+        const mod = index % 3;
         return COLORS[mod];
     }
 
     scrollToIndex = () => {
-        let randomIndex = Math.floor(Math.random(Date.now()) * this.props.data.length);
+        let randomIndex = Math.floor(Math.random(Date.now()) * this.state.data.length);
         this.flatListRef.scrollToIndex({animated: true, index: randomIndex});
-    }
+    };
+
+    deleteItem = (item, index) => {
+        this.initialScrollIndex = index > 1 ? index - 1 : 0;
+        let filterDatas = this.state.data.filter(temp => {
+            if (item != temp) {
+                return true;
+            }
+        });
+        this.setState({
+            data: filterDatas
+        });
+    };
 
     render() {
         return (
@@ -51,18 +71,21 @@ class ScrollToExample extends Component {
                     />
                 </View>
                 <FlatList
-                    style={{ flex: 1 }}
-                    ref={(ref) => { this.flatListRef = ref; }}
+                    style={{flex: 1}}
+                    ref={(ref) => {
+                        this.flatListRef = ref;
+                    }}
                     keyExtractor={item => item}
                     getItemLayout={this.getItemLayout}
-                    initialScrollIndex={50}
+                    initialScrollIndex={this.initialScrollIndex}
                     initialNumToRender={2}
-                    renderItem={({ item, index}) => (
+                    renderItem={({item, index}) => (
                         <View style={{...style, backgroundColor: this.getColor(index)}}>
                             <Text>{item}</Text>
+                            <Button title="删除" onPress={()=>this.deleteItem(item,index)} />
                         </View>
                     )}
-                    {...this.props}
+                    data={this.state.data}
                 />
             </View>
         );
@@ -91,7 +114,7 @@ const styles = StyleSheet.create({
 
 export default class MyFlatList extends Component {
     render() {
-        return  <ScrollToExample
+        return <ScrollToExample
             data={getData(100)}
         />
     }
